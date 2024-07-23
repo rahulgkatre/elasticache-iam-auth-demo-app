@@ -115,6 +115,7 @@ public class IAMAuthDemoApp {
             // or reuse a cached token for `authTokenTimeoutSeconds`.
             StatefulRedisConnection<String, String> connection = redisClient.connect();
             String key = getRandKey();
+            System.out.println(key);
             connection.sync().set(key, "value");
             System.out.println(String.format("Set %s to value", key));
             connection.sync().get(getRandKey());
@@ -141,6 +142,7 @@ public class IAMAuthDemoApp {
             // or reuse a cached token for `authTokenTimeoutSeconds`.
             StatefulRedisClusterConnection<String, String> connection = redisClusterClient.connect();
             String key = getRandKey();
+            System.out.println(key);
             connection.sync().set(key, "value");
             System.out.println(String.format("Set %s to value", key));
             connection.sync().get(getRandKey());
@@ -194,6 +196,6 @@ public class IAMAuthDemoApp {
     }
 
     private String getRandKey() {
-        return String.format("{%s}:%s", userId, UUID.randomUUID().toString());
+        return String.format("{%s}:demo-%s", userId, UUID.randomUUID().toString());
     }
 }

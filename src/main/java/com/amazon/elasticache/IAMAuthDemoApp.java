@@ -36,6 +36,9 @@ public class IAMAuthDemoApp {
     @Parameter(names = {"--tls"})
     private boolean tlsEnabled = false;
 
+    @Parameter(names = {"--skip-verify"})
+    private boolean skipVerify = true;
+
     @Parameter(names = {"--cluster-mode"})
     private boolean clusterModeEnabled = false;
 
@@ -89,6 +92,7 @@ public class IAMAuthDemoApp {
             .withHost(redisHost)
             .withPort(redisPort)
             .withSsl(tlsEnabled)
+            .withVerifyPeer(skipVerify)
             .withAuthentication(getCredentialsProvider())
             .build();
 

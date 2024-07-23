@@ -60,11 +60,7 @@ public class IAMAuthTokenRequest {
         request = sign(request, credentials);
 
         // Return the signed URI
-        return new URIBuilder(request.getUri())
-            .addParameters(toNamedValuePair(request.rawQueryParameters()))
-            .build()
-            .toString()
-            .replace(REQUEST_PROTOCOL, "");
+        return request.getUri().toString().replace(REQUEST_PROTOCOL, "");
     }
 
     private SdkHttpFullRequest getSignableRequest() {

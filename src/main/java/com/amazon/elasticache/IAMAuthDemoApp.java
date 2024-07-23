@@ -1,7 +1,10 @@
 package com.amazon.elasticache;
 
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider;
+import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.google.common.base.Preconditions;
@@ -45,8 +48,20 @@ public class IAMAuthDemoApp {
     @Parameter(names = {"--replication-group-id"})
     private String replicationGroupId;
 
+    @Parameter(names = {"--cache-name"})
+    private String cacheName;
+
+    @Parameter(names = {"--serverless"})
+    private boolean serverless;
+
+    @Parameter(names = {"--role-arn"})
+    private String roleArn;
+
+    @Parameter(names = {"--role-session-name"})
+    private String roleSessionName;
+
     @Parameter(names = {"--region"})
-    private String region = "us-east-1";
+    private String region = "us-west-2";
 
     @Parameter(names = {"--connect-sleep-time"})
     private long connectSleepTimeSeconds = 1;
@@ -140,18 +155,28 @@ public class IAMAuthDemoApp {
             return new RedisStaticCredentialsProvider(userId, password);
         }
 
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(replicationGroupId),
-            "replicationGroupId cannot be be null or emtpy");
-
-
         // Create a default AWS Credentials provider.
         // This will look for AWS credentials as defined in the doc.
         // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html
-        AwsCredentialsProvider awsCredentialsProvider = DefaultCredentialsProvider.create();
+        StsClient stsClient = StsClient.builder().region(Region.of(region)).build();
+        AssumeRoleRequest assumeRoleRequest = AssumeRoleRequest.builder()
+            .roleArn(roleArn)
+            .roleSessionName(roleSessionName)
+            .build();
+        AwsCredentialsProvider awsCredentialsProvider = StsAssumeRoleCredentialsProvider.builder()
+            .refreshRequest(assumeRoleRequest)
+            .stsClient(stsClient)
+            .build();
 
         // Create an IAM Auth Token request. Once this request is signed it can be used as an
         // IAM Auth token for Elasticache Redis.
-        IAMAuthTokenRequest iamAuthTokenRequest = new IAMAuthTokenRequest(userId, replicationGroupId, region);
+
+        IAMAuthTokenRequest iamAuthTokenRequest;
+        if (replicationGroupId == null) {
+            iamAuthTokenRequest = new IAMAuthTokenRequest(userId, cacheName, region, serverless);
+        } else {
+            iamAuthTokenRequest = new IAMAuthTokenRequest(userId, replicationGroupId, region);
+        }
 
         // Create a Redis credentials provider using IAM credentials.
         return new RedisIAMAuthCredentialsProvider(

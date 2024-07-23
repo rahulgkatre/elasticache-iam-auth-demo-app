@@ -4,6 +4,8 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import com.google.common.base.Suppliers;
 import io.lettuce.core.RedisCredentials;
 import io.lettuce.core.RedisCredentialsProvider;
+
+import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import reactor.core.publisher.Mono;
@@ -50,6 +52,10 @@ public class RedisIAMAuthCredentialsProvider implements RedisCredentialsProvider
      * The token is signed in using the provided AWS credentials.
      */
     private String getIamAuthToken() {
-        return iamAuthTokenRequest.toSignedRequestUri(awsCredentialsProvider.resolveCredentials());
+        try {
+            return iamAuthTokenRequest.toSignedRequestUri(awsCredentialsProvider.resolveCredentials());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

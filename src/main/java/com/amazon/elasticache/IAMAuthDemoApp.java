@@ -69,6 +69,9 @@ public class IAMAuthDemoApp {
     @Parameter(names = {"--connect-sleep-time"})
     private long connectSleepTimeSeconds = 1;
 
+    @Parameter(names = {"--key-prefix"})
+    private String keyPrefix = "";
+
     private long numConnections = 0;
 
     public static void main(String[] args) {
@@ -196,6 +199,6 @@ public class IAMAuthDemoApp {
     }
 
     private String getRandKey() {
-        return String.format("{%s}:demo-%s", userId, UUID.randomUUID().toString());
+        return String.format("%sdemo-%s", keyPrefix, UUID.randomUUID().toString());
     }
 }
